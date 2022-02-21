@@ -13,9 +13,6 @@ from polyglot.detect import Detector
 import contractions
 import string
 import numpy as np
-import plotly.express as px
-from sklearn.feature_extraction.text import TfidfVectorizer
-import matplotlib.pyplot as plt
 from transformers import (
    AutoModel,
    AutoConfig,
@@ -55,7 +52,7 @@ def improve_ct_bert(post):
     i = 0
     while (i < len(rule_list)):
         if  f' {rule_list[i][0]} ' in f' {post} ':
-            return {"sentiment": rule_list[i][1]}
+            return rule_list[i][1]
         i = i+1         
     tf_batch = tokenizer(post, max_length=128, padding=True, truncation=True, return_tensors='tf')   # we are tokenizing before sending into our trained model
     tf_outputs = model(tf_batch)                                  

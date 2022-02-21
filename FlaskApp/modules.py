@@ -7,9 +7,6 @@ import plotly.express as px
 import re
 import string
 import numpy as np
-import spacy
-from spacy_langdetect import LanguageDetector
-from spacy.language import Language
 import contractions
 import nltk
 from nltk.corpus import stopwords
