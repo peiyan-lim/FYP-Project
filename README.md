@@ -13,6 +13,15 @@
    ```
    cd your-path/FYP-Project/FastAPIApp/
    ```
+   To activate the virtual environment    <br />
+     For Mac users, type
+     ```
+     source env/bin/activate
+     ```
+     For Windows users, type
+     ```
+     env\Scripts\activate.bat
+     ```
    To run it, type the following into the terminal
    ```
    uvicorn main:app
