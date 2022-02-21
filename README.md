@@ -20,7 +20,7 @@
      ```
      For Windows users, type
      ```
-     env\Scripts\activate.bat
+     windows-env\Scripts\activate.bat
      ```
    To run it, type the following into the terminal
    ```
@@ -43,7 +43,7 @@
      ```
      For Windows users, type
      ```
-     env\Scripts\activate.bat
+     windows-env\Scripts\activate.bat
      ```
    To run the application,
    ```
