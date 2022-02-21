@@ -1,0 +1,15 @@
+body {
+    font-family: Nunito, Roboto, Noto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4286;
+    background-color:#FFF3E6;
+  /*   background-color: #fafafa; */
+  }
+  
+  @media print {
+    body {
+      background-color: rgb(165, 39, 39);
+    }
+  }
+  
+  

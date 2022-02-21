@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename = 'css/index.css')}}" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <!-- https://github.com/michalsnik/aos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Yeseva+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <!-- Custom CSS -->
+    <style>
+        table, th, td {
+            border:1px solid black;
+        }
+
+        th, td{
+            padding:10px;
+        }
+
+       body {
+            font-family: Nunito, Roboto, Noto, Arial, sans-serif;
+            background-color: #FFF3E6;
+        }
+
+        h2{
+            font-family: Yeseva One;
+            color: #0D335D;
+            text-align: center;
+        }
+
+        .form-control{
+            border: 1px solid #0D335D;
+            background: transparent;
+        }
+
+        .btn-primary {
+            background-color: #C1A1D3;
+            border-color: #C1A1D3;
+            box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 20%), 0 1px 5px 0 rgb(0 0 0 / 12%);
+        }
+
+        .btn-primary:hover{
+            background-color: #9B80AB;
+            border-color: #9B80AB;
+        }
+        .bg-primary {
+            background-color: #FFF3E6!important;
+        }
+        .navbar-brand{
+            color: #0d335d !important;
+            font-family: Yeseva One;
+            font-weight: bold;
+        }  
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0rem;  
+        } 
+        .custom-toggler.navbar-toggler {
+            border: none;
+        }
+        .custom-toggler .navbar-toggler-icon {
+            background-image: url(
+"data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(13, 51, 93, 0.8)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
+        }
+        .navbar-nav > li > a{
+            color: #0d335d !important;
+            margin: 5px;
+        } 
+        .navbar-nav > li{
+            border-radius: 10px;
+        }
+        .navbar-nav > li:hover, .navbar-nav > li:focus, .navbar-nav > li:hover a, .navbar-nav > li:focus a{
+            background-color:#0D335D;
+            color: #C1A1D3 !important;
+        }  
+        
+    </style>
+    <script>
+        async function callback() {
+            let Data = document.getElementById('data').value;
+            //return;
+            let response = await fetch("/callback/getData?data=" + Data);
+            if (response.ok) {
+                let chartJson = await response.json();
+                console.log(chartJson)
+                if (response.ok) {
+                    response = await fetch("/callback/getInfo?data=" + Data);
+                    let infoJson = await response.json();
+                    info(infoJson);
+                    Plotly.newPlot('chart', chartJson, {});
+                    response = await fetch("/callback/getPie?data=" + Data);
+                    let pieJson = await response.json();
+                    Plotly.newPlot('chartpie', pieJson, {});
+                } else {
+                    window.location.href = "/500"
+                    //alert("HTTP-Error: " + response.status + " on getInfo");
+                }
+            } else {
+                window.location.href = "/500"
+                // alert("HTTP-Error: " + response.status + " on getData");
+            }
+        }
+
+    
+        function info(json) {
+            document.getElementById("wordcloudpos").src = "/static/"+json.data+"_pos_wc.png";
+            document.getElementById("wordcloudneg").src = "/static/"+json.data+"_neg_wc.png";
+            let name = document.getElementById('dataName');
+            name.innerHTML = json.data;
+            name = document.getElementById('startDateText');
+            name.innerHTML = json.startDate;
+            name = document.getElementById('endDateText');
+            name.innerHTML = json.endDate;
+            divPos = document.getElementById('tablepos');
+            divPos.innerHTML = "";
+            divPos.insertAdjacentHTML('afterbegin', json.htmltablePos);
+            divNeg = document.getElementById('tableneg');
+            divNeg.innerHTML = "";
+            divNeg.insertAdjacentHTML('afterbegin', json.htmltableNeg);
+        }
+    </script>
+
+    {% if title %}
+        <title>SGCovid-{{title}}</title>
+    {% else %}
+        <title>SGCovid</title>
+    {% endif %}
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+          <a class="navbar-brand">SGCovid</a>
+          <button class="navbar-toggler ml-auto custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse justify-content-end" id="navbarText">
+            <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('index')}}">Dashboard</a> 
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('sentiment_checker')}}">Sentiment Checker</a> 
+                  </li>
+            </ul>
+          </div>
+        </div>
+    </nav>
+
+      <main>
+          <div class="container">
+              <div class="row">
+                  <div class="col-md-12 col-sm-12 col-xm-12">
+                      <div class="ml-auto mr-auto">
+                        {% block content %}
+                        {% endblock %}
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </main>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+      AOS.init({
+        offset: 400,
+        duration: 1000
+      });
+     
+    </script>
+ <script>callback();</script>
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+     integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+     crossorigin="anonymous"></script>
+ <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+   
+  
+</body>
+</html>

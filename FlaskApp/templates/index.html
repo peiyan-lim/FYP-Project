@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col text-light bg-dark" style="margin:20px 0px 20px 0px">
+            <h1 style="padding:20px 0px 20px 0px">Dashboard</h1>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col"><b>Select data</b></div>
+        <div class="col">
+            <select id="data" class="form-select" aria-label="Select" )>
+                <option selected value="all">All</option>
+                <option value="astrazeneca">Astrazeneca</option>
+                <option value="moderna">Moderna</option>
+                <option value="pfizer">Pfizer</option>
+                <option value="sinovac_sinopharm">Sinovac & Sinopharm</option>
+            </select>
+        </div>
+        <div class="col">
+            <button type="button" class="btn btn-primary" onclick="callback()">Filter</button>
+        </div>
+
+        <div class="col-12"><h2 id="dataName"></h2></div>
+        <div class="col-12"><p><b>Data info</b></p>
+            <p>Period: <span id="startDateText">N/A</span> - <span id="endDateText">N/A</span></p>     
+        </div>
+        <div class="col-8">
+            <div class="card m-auto" style="width: 100%;" data-aos="fade-left">
+                <div class="card-body">
+                    <div id="chart" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card m-auto" style="width: 100%;" data-aos="fade-left">
+                <div class="card-body">
+                    <div id="chartpie" style="width: 100%;"></div>
+                </div> 
+            </div>
+        </div>
+        <div class="col-6">
+            <br/>
+            <div class="card m-auto" style="width: 100%;" data-aos="fade-left">
+                <div class="card-body">
+                    <img id="wordcloudpos" src="/static/all_pos_wc.png" style="width: 100%;">
+                </div>
+            </div>
+            <br/>
+        </div>
+        <div class="col-6">
+            <br/>
+            <div class="card m-auto" style="width: 100%;" data-aos="fade-left">
+                <div class="card-body">
+                    <img id="wordcloudneg" src="/static/all_neg_wc.png" style="width: 100%;">
+                </div>
+            </div>
+            <br/>
+        </div>
+        <div class="col-6">
+            <div class="card m-auto" style="width: 100%;" data-aos="fade-left">
+                <div class="card-body">
+                    <h3>Top 3 Positive Posts</h3>
+                    <div id="tablepos"></div>
+                </div> 
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card m-auto" style="width: 100%;" data-aos="fade-left">
+                <div class="card-body">
+                    <h3>Top 3 Negative Posts</h3>
+                    <div id="tableneg"></div>
+                </div> 
+            </div>
+        </div>
+        <div class="col-12" style="font-size:smaller;padding:10px;text-align: right;">
+            <i>The data is, to the best of our knowledge, correct but cannot be guarenteed to be so</i>
+            <br/>
+            <i>This site is for educational and demonstation purposes, only</i>
+       </div>    
+       
+    </div>
+
+</div>
+{% endblock %}

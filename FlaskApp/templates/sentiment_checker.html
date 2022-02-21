@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+Sentiment Checker
+{% endblock %}
+
+
+{% block content %}
+<div style="margin: 10%;"></div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+        <h2 class="pt-5 pb-2">Check your text sentiment</h2>
+        <form action="" method="post" class="form" role="form">
+            {{ form.csrf_token() }}
+           <div class="row">
+            {{ wtf.form_field(form.msg, class='form-control', rows= 6) }}
+           </div>
+           <br/>
+           <!-- <div class="d-grid gap-2"> -->
+           <div class="col-md-12 text-center"> 
+            <button type="submit" class="btn btn-primary"><i class="fa fa-search" aria-hidden="true"></i> CHECK SENTIMENT</button>
+           </div> 
+        </form>
+        <p class="pt-5"><strong>{{ message }}</strong></p>
+    
+      <!-- <p class="lead">This is the index page for an example Flask app using Bootstrap and WTForms. Note that only 100 actors are in the data source. Partial names are not valid.</p>
+
+      {{ wtf.quick_form(form) }}
+<input type="submit" value="CHECK SENTIMENT"/>
+      <p class="pt-5"><strong>{{ message }}</strong></p> -->
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
