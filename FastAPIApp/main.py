@@ -3,29 +3,19 @@
 
 # In[1]:
 
-
+#Import the libraries
 from fastapi import FastAPI
 import json
-#Import the libraries
 import pandas as pd
 import re
 import emoji
-import spacy
-from spacy_langdetect import LanguageDetector
-from spacy.language import Language
+from polyglot.detect import Detector
 import contractions
 import string
 import numpy as np
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-nltk.download('stopwords')
-nltk.download('punkt')
 import plotly.express as px
 from sklearn.feature_extraction.text import TfidfVectorizer
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
-from textblob import TextBlob
 from transformers import (
    AutoModel,
    AutoConfig,
@@ -35,10 +25,6 @@ from transformers import (
    glue_convert_examples_to_features
 )
 import tensorflow as tf
-from nrclex import NRCLex
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from flair.models import TextClassifier
-from flair.data import Sentence
 
 app = FastAPI()
 
@@ -64,15 +50,12 @@ def format_prediction(preds, label_mapping, label_name):
 
 model = TFAutoModelForSequenceClassification.from_pretrained(model_name)
     
-
-@app.get("/predict-sentiment")
-def rule_check_bert(post: str):
+def improve_ct_bert(post):
     rule_list = [('error', 'Negative'), ('wrongly', 'Negative'), ('tackle the pandemic', 'Positive'), ('tested positive', 'Negative'), ('reports of suspected adverse effects', 'Negative'), ('encourage', 'Positive'), ('protection in patients was achieved', 'Positive'), ('unusually heavy period', 'Negative'), ('breakthrough', 'Positive'), ('life-threatening', 'Negative'), ('slowest', 'Negative'), ('infected despite sinovac covid-19 vaccinations', 'Negative'), ('encouraging', 'Positive'), ('thankful', 'Positive'), ('warning', 'Negative'), ('failure to stop virus spread ', 'Negative'), ('growing ties', 'Positive'), ('93% vaccine efficacy', 'Positive'), ('“chronological connection” between the vaccination of the patient and the onset of symptoms of the disease', 'Negative'), ('suspended', 'Negative'), ('successfully', 'Positive'), ('contributed', 'Positive'), ('thoughtful', 'Positive'), ('significant milestone', 'Positive'), ('ramp up the pace of vaccinations', 'Positive'), ('recognised as vaccinated', 'Positive'), ('efficacy of their COVID-19 vaccine dropped', 'Negative'), ('easier to distribute', 'Positive'), ('support national vaccination programmes', 'Positive'), ('vaccination drive is in full swing', 'Positive'), ('grateful for their contributions', 'Positive'), ('enhance overall vaccination coverage', 'Positive'), ('has enough to meet its current needs', 'Positive'), ('ramp up vaccination ', 'Positive'), ('conveniently', 'Positive'), ('discovery of contaminants', 'Negative'), ('suffered', 'Negative'), ('late in procuring vaccines', 'Negative'), ('not enough', 'Negative'), ('good progress', 'Positive'), ('increase immunity', 'Positive'), ('painless', 'Positive'), ('win-win arrangement', 'Positive'), ('vaccine is safe', 'Positive'), ('100% per cent success rate', 'Positive'), ('misleading', 'Negative'), ('donating', 'Positive'), ('higher rate of the South African variant', 'Negative'), ('100% per cent success rate', 'Positive'), ('accused', 'Negative'), ('counterfeit versions', 'Negative'), ('remain effective', 'Positive'), ('absurd', 'Negative'), ('heart inflammation', 'Negative'), ('on track', 'Positive'), ('higher neutralising potency', 'Positive'), ('higher concentrations of antibodies', 'Positive'), ('good news', 'Positive'), ('pleased', 'Positive'), ('less effective', 'Negative'), ('able to stop the virus from replicating', 'Positive'), ('high efficacy', 'Positive'), ('disappointed', 'Negative'), ('twice as many neutralising antibodies', 'Positive'), ('optimistic', 'Positive'), ('mistake', 'Negative'), ('bilateral cooperation', 'Positive'), ('high vaccination rate', 'Positive'), ('higher vaccination coverage', 'Positive'), ('situation under control', 'Positive'), ('satisfied', 'Positive'), ('cheer', 'Positive'), ('long-standing friendship','Positive')]
     i = 0
     while (i < len(rule_list)):
         if  f' {rule_list[i][0]} ' in f' {post} ':
             return {"sentiment": rule_list[i][1]}
-            #return {"sentiment": "ok"}
         i = i+1         
     tf_batch = tokenizer(post, max_length=128, padding=True, truncation=True, return_tensors='tf')   # we are tokenizing before sending into our trained model
     tf_outputs = model(tf_batch)                                  
@@ -80,11 +63,61 @@ def rule_check_bert(post: str):
     labels = ['Negative','Positive']
     label = tf.argmax(tf_predictions, axis=1)
     label = label.numpy()
-    #return {"sentiment": "ok"}
-    return {"sentiment": labels[label[0]]}
+    return labels[label[0]]
+
+@app.get("/predict-sentiment")
+def rule_check_bert(post: str):
+    sentiment= improve_ct_bert(post)
+    return {"sentiment": sentiment}
 
 #Import cleaned data
 data_cleaned = pd.read_excel('cleaned_data.xlsx', sheet_name="Raw data")
+
+#Remove emoji and url
+def clean_post(text):
+    remove_emoji_text = emoji.get_emoji_regexp().sub(r'', (str(text).encode('utf8')).decode('utf8')) #Remove emoji
+    return re.sub(r"http\S+", "", remove_emoji_text) #Remove url
+
+#Rename page category
+def category_rename(category):
+    return category.replace("_", " ").lower().title()
+
+#Check if language used is english
+def check_language(mixed_text):
+    mixed_text = str(mixed_text)
+    if mixed_text == "":
+        print("here")
+    for language in Detector(mixed_text,quiet=True).languages:
+        if (language.code!="en" and language.code!="un"):
+            return False
+    return True
+
+#Check if post is related to Covid
+def related_data(post):
+    result = True
+    msgL = str(post).lower()
+    removeList = ['mall', 'sale', 'sales', 'giveaway', 'discount']
+    if any(x in msgL for x in removeList):
+        result= False
+    return result
+
+def get_all_cleaned_data():
+    fileName = "2021-09-09-17-43-35-SGT-search-csv-export.csv"
+    sheetName = "2021-09-09-17-43-35-SGT-search-"
+    data = pd.read_csv(fileName)
+    data = pd.DataFrame(data[["Message", "Post Created Date", "Page Category", "Likes"]]) #Data reduction
+    data.drop_duplicates(subset = None, keep = 'first', inplace = True) #Remove duplicated rows of data
+    data['Message'] = data['Message'].map(clean_post)
+    data = data[(data['Message']!="")]
+    data['Post Created Date'] =  pd.to_datetime(data['Post Created Date'], format='%Y-%m-%d')
+    data['Page Category'] = data['Page Category'].apply(lambda x: category_rename(x))
+    data.loc[:,'Eng'] = list(data.Message.apply(lambda p: check_language(p)))
+    data.drop(data[data['Eng'] == False].index, inplace = True)
+    data.loc[:,'Related'] = list(data.Message.apply(lambda p: related_data(p)))
+    data.drop(data[data['Related'] == False].index, inplace = True)
+    data['ImproveCTBERTSentiment'] = data.apply(lambda x: improve_ct_bert(x["Message"]), axis=1)
+    return data
+    
 
 def get_data(post, vaccine):
     result = "False"
